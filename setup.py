@@ -11,7 +11,7 @@ setuptools.setup(
     description='Easy access to datasets from the UCI Machine Learning Repository',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/isacarnekvist",
+    url="https://github.com/isacarnekvist/ucimlr",
     packages=setuptools.find_packages(),
     python_requires='>=3.6',
     install_requires=[
