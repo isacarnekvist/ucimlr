@@ -22,7 +22,7 @@ print(dataset.type_)
 print(dataset.num_features)
 >>> 10
 print(dataset.x.shape)
->>> (3341, 1)
+>>> (3341, 10)
 
 # For datasets of type 'regression', you can inspect the
 # dimensionality of the output:
