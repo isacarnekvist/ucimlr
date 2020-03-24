@@ -1,0 +1,9 @@
+.DS_Store
+.idea/
+build/
+datasets/
+dist/
+ucimlr.egg-info/
+ucimlr/__init__.pyc
+ucimlr/__pycache__/
+venv/

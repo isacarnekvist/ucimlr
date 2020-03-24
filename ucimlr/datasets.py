@@ -336,6 +336,7 @@ class MagicGamma(Dataset):
         label_encode_df_(df, y_columns[0])
         df_tuple = train_test_split(df, train_size=0.8, random_state=0)
         self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
+        self.y = self.y[:, 0]  # Flatten for classification
 
 
 class OnlineNews(Dataset):
