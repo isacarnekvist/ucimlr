@@ -1,4 +1,5 @@
-# UCI Machine Learning Repository - API
+[![Build Status](https://travis-ci.com/isacarnekvist/ucimlr.svg?branch=master)](https://travis-ci.com/isacarnekvist/ucimlr)
+# UCI Machine Learning Repository - API 
 This package provides easy access to a number of datasets from
 the UCI Machine Learning repository.
 
