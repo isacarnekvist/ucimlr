@@ -1,0 +1,8 @@
+site_name: "UCIMLR"
+
+pages:
+- Home: index.md
+- API:
+  - ucimlr.datasets: datasets.md
+
+theme: readthedocs

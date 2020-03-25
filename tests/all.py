@@ -12,7 +12,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_all(self):
         for dataset_cls in all_datasets:
-            dataset = dataset_cls('datasets', download=True)
+            dataset = dataset_cls('datasets')
 
             # Check numbers
             self.assertFalse(np.isnan(dataset.x).any())

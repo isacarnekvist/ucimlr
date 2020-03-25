@@ -14,25 +14,6 @@ CLASSIFICATION = 'classification'
 
 
 class Dataset(abc.ABC):
-    """
-    Abstract Dataset class.
-
-    Subclasses are required to have the following variables set:
-    name: Unique string name for the dataset
-    type_: Type specifier (str)
-    x: np.array of shape (n_samples, n_features)
-
-    Classification:
-    y: np.array of shape (n_samples,)
-
-    Regression:
-    y: np.array of shape (n_samples, n_target_dimensions)
-    """
-    def __init__(self):
-        self.x = None
-        self.y = None
-        self.type_ = None
-
     def __len__(self):
         return self.x.shape[0]
 
@@ -63,15 +44,21 @@ class Dataset(abc.ABC):
 
 
 class Abalone(Dataset):
+    """
+    Link to the dataset [description](https://archive.ics.uci.edu/ml/datasets/Abalone).
+
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
         file_path = os.path.join(dataset_path, filename)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
-        if download:
-            download_file(url, dataset_path, filename)
+        download_file(url, dataset_path, filename)
         df = pd.read_csv(file_path, header=None)
         y_columns = df.columns[-1:]
         one_hot_encode_df_(df)
@@ -80,9 +67,14 @@ class Abalone(Dataset):
 
 
 class Adult(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         filename_train = 'data_train.csv'
         filename_test = 'data_test.csv'
@@ -90,9 +82,8 @@ class Adult(Dataset):
         file_path_test = os.path.join(dataset_path, filename_test)
         url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
         url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test'
-        if download:
-            download_file(url_train, dataset_path, filename_train)
-            download_file(url_test, dataset_path, filename_test)
+        download_file(url_train, dataset_path, filename_train)
+        download_file(url_test, dataset_path, filename_test)
 
         df_train = pd.read_csv(file_path_train, header=None, skiprows=0)
         df_test = pd.read_csv(file_path_test, header=None, skiprows=1)
@@ -111,14 +102,18 @@ class Adult(Dataset):
 
 
 class AirQuality(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         filename = 'AirQualityUCI.csv'
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00360/AirQualityUCI.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, filename)
 
         df = pd.read_csv(file_path, sep=';', parse_dates=[0, 1])
@@ -142,17 +137,21 @@ class AirQuality(Dataset):
 
 
 class APSFailure(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         file_name_train = 'train.csv'
         file_name_test = 'test.csv'
         dataset_path = os.path.join(root, self.name)
         url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_training_set.csv'
         url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_test_set.csv'
-        if download:
-            download_file(url_train, dataset_path, file_name_train)
-            download_file(url_test, dataset_path, file_name_test)
+        download_file(url_train, dataset_path, file_name_train)
+        download_file(url_test, dataset_path, file_name_test)
         file_path = os.path.join(dataset_path, file_name_train if train else file_name_test)
         df = pd.read_csv(file_path, skiprows=20, na_values='na')
         clean_na_(df)
@@ -163,13 +162,17 @@ class APSFailure(Dataset):
 
 
 class Avila(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00459/avila.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_path_train = os.path.join(dataset_path, 'avila', 'avila-tr.txt')
         file_path_test = os.path.join(dataset_path, 'avila', 'avila-ts.txt')
         df = pd.read_csv(file_path_train if train else file_path_test, header=None)
@@ -180,13 +183,17 @@ class Avila(Dataset):
 
 
 class BankMarketing(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'bank-additional', 'bank-additional-full.csv')
         df = pd.read_csv(file_path, sep=';')
         y_columns = ['y']
@@ -198,14 +205,18 @@ class BankMarketing(Dataset):
 
 
 class BlogFeedback(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         file_name = 'blogData_train.csv'
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00304/BlogFeedback.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
 
         # Iterate all test csv and concatenate to one DataFrame
         test_dfs = []
@@ -225,16 +236,20 @@ class BlogFeedback(Dataset):
 
 
 class CardDefault(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.xls'
         file_path = os.path.join(dataset_path, filename)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/' \
               'default%20of%20credit%20card%20clients.xls'
-        if download:
-            download_file(url, dataset_path, filename)
+        download_file(url, dataset_path, filename)
         df = pd.read_excel(file_path, skiprows=1, index_col='ID')
         y_columns = ['default payment next month']
         df_tuple = train_test_split(df, train_size=0.8, random_state=0)
@@ -243,13 +258,17 @@ class CardDefault(Dataset):
 
 
 class CTSlices(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00206/slice_localization_data.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_name = 'slice_localization_data.csv'
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path)
@@ -263,13 +282,17 @@ class CTSlices(Dataset):
 
 
 class FacebookComments(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00363/Dataset.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         dataset_path = os.path.join(dataset_path, 'Dataset')
 
         # The 5th variant has the most data
@@ -284,17 +307,21 @@ class FacebookComments(Dataset):
 
 
 class Landsat(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         file_name_train = 'train.csv'
         file_name_test = 'test.csv'
         url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/satimage/sat.trn'
         url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/satimage/sat.tst'
-        if download:
-            download_file(url_train, dataset_path, file_name_train)
-            download_file(url_test, dataset_path, file_name_test)
+        download_file(url_train, dataset_path, file_name_train)
+        download_file(url_test, dataset_path, file_name_test)
         file_path = os.path.join(dataset_path, file_name_train if train else file_name_test)
         df = pd.read_csv(file_path, sep=' ', header=None)
         y_columns = [36]
@@ -304,14 +331,18 @@ class Landsat(Dataset):
 
 
 class LetterRecognition(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         file_name = 'data.csv'
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/letter-recognition/letter-recognition.data'
-        if download:
-            download_file(url, dataset_path, file_name)
+        download_file(url, dataset_path, file_name)
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path, header=None)
         y_columns = [0]
@@ -322,14 +353,18 @@ class LetterRecognition(Dataset):
 
 
 class MagicGamma(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         file_name = 'data.csv'
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/magic/magic04.data'
-        if download:
-            download_file(url, dataset_path, file_name)
+        download_file(url, dataset_path, file_name)
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path, header=None)
         y_columns = [10]
@@ -340,13 +375,17 @@ class MagicGamma(Dataset):
 
 
 class OnlineNews(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00332/OnlineNewsPopularity.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'OnlineNewsPopularity', 'OnlineNewsPopularity.csv')
         df = pd.read_csv(file_path, )
         df.drop(columns=['url', ' timedelta'], inplace=True)
@@ -357,16 +396,20 @@ class OnlineNews(Dataset):
 
 
 class Parkinson(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
         file_path: str = os.path.join(dataset_path, filename)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/' \
               'parkinsons/telemonitoring/parkinsons_updrs.data'
-        if download:
-            download_file(url, dataset_path, filename)
+        download_file(url, dataset_path, filename)
         df = pd.read_csv(file_path)
         y_columns = ['motor_UPDRS', 'total_UPDRS']
 
@@ -379,13 +422,17 @@ class Parkinson(Dataset):
 
 
 class PowerPlant(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00294/CCPP.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'CCPP', 'Folds5x2_pp.xlsx')
         df = pd.read_excel(file_path)
         y_columns = ['PE']  # Not clear if this is the aim of the dataset
@@ -394,14 +441,18 @@ class PowerPlant(Dataset):
 
 
 class SensorLessDrive(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         file_name = 'data.csv'
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00325/Sensorless_drive_diagnosis.txt'
-        if download:
-            download_file(url, dataset_path, file_name)
+        download_file(url, dataset_path, file_name)
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path, header=None, sep=' ')
         y_columns = [48]
@@ -412,9 +463,14 @@ class SensorLessDrive(Dataset):
 
 
 class Shuttle(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = CLASSIFICATION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/shuttle/shuttle.trn.Z'
         url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/shuttle/shuttle.tst'
@@ -422,14 +478,13 @@ class Shuttle(Dataset):
         file_name_test = 'test.csv'
         file_path_train = os.path.join(dataset_path, file_name_train)
         file_path_test = os.path.join(dataset_path, file_name_test)
-        if download:
-            file_name_z = 'train.z'
-            download_file(url_train, dataset_path, file_name_z)
-            path_z = os.path.join(dataset_path, file_name_z)
-            with open(path_z, 'rb') as f_in:
-                with open(file_path_train, 'wb') as f_out:
-                    f_out.write(unlzw(f_in.read()))
-            download_file(url_test, dataset_path, file_name_test)
+        file_name_z = 'train.z'
+        download_file(url_train, dataset_path, file_name_z)
+        path_z = os.path.join(dataset_path, file_name_z)
+        with open(path_z, 'rb') as f_in:
+            with open(file_path_train, 'wb') as f_out:
+                f_out.write(unlzw(f_in.read()))
+        download_file(url_test, dataset_path, file_name_test)
         df = pd.read_csv(file_path_train if train else file_path_test, header=None, sep=' ')
         y_columns = [9]
         label_encode_df_(df, y_columns[0])
@@ -438,13 +493,17 @@ class Shuttle(Dataset):
 
 
 class Superconductivity(Dataset):
+    """
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
     type_ = REGRESSION
 
-    def __init__(self, root, train=True, download=False):
+    def __init__(self, root, train=True):
         dataset_path = os.path.join(root, self.name)
         url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00464/superconduct.zip'
-        if download:
-            download_unzip(url, dataset_path)
+        download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'train.csv')
         df = pd.read_csv(file_path)
         y_columns = ['critical_temp']

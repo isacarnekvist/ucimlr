@@ -1,13 +1,11 @@
-[![Build Status](https://travis-ci.com/isacarnekvist/ucimlr.svg?branch=master)](https://travis-ci.com/isacarnekvist/ucimlr)
 # UCI Machine Learning Repository - an API
 
 This is a python package to enable easy access to datasets
 in the UCI Machine Learning Repository.
 
 The project is at an early alpha stage, so suggestion for
-changes or additions are very welcome.
-
-Link to [documentation](https://ucimlr.readthedocs.io/)
+changes or additions are very welcome. Please post an issue
+on the [git repository](https://github.com/isacarnekvist/ucimlr).
 
 ## Basic usage
 
