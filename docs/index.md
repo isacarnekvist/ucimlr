@@ -1,7 +1,10 @@
-# UCI Machine Learning Repository - an API
+# An API to the UCI Machine Learning Repository
 
 This is a python package to enable easy access to datasets
-in the UCI Machine Learning Repository.
+in the UCI Machine Learning Repository. Note that this is not
+an official API. Any usage of datasets should be cited
+according to instructions in the UCI Machine Learning
+Repository.
 
 The project is at an early alpha stage, so suggestion for
 changes or additions are very welcome. Please post an issue
