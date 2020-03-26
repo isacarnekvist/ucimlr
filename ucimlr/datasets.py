@@ -4,9 +4,9 @@ import abc
 import numpy as np
 import pandas as pd
 from unlzw import unlzw
-from sklearn.model_selection import train_test_split
 
-from .helpers import (download_file, download_unzip, one_hot_encode_df_, xy_split, label_encode_df_, clean_na_)
+from ucimlr.helpers import (download_file, download_unzip, one_hot_encode_df_, xy_split, label_encode_df_,
+                            clean_na_, normalize_df_, train_test_split, split_normalize_sequence)
 
 # Dataset types
 REGRESSION = 'regression'
@@ -33,7 +33,7 @@ class Dataset(abc.ABC):
         if self.type_ == REGRESSION:
             raise ValueError('num_classes is only valid for classification, see num_targets')
         else:
-            return len(set(self.y))
+            return len(set(self.y))  # TODO This is not a good way apparently
 
     @property
     def num_targets(self):
@@ -62,8 +62,7 @@ class Abalone(Dataset):
         df = pd.read_csv(file_path, header=None)
         y_columns = df.columns[-1:]
         one_hot_encode_df_(df)
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class Adult(Dataset):
@@ -96,8 +95,9 @@ class Adult(Dataset):
         y_columns = df.columns[-1:]
         one_hot_encode_df_(df, skip_columns=y_columns)
         label_encode_df_(df, y_columns[0])
-        df_tuple = (df.loc[df_train.index], df.loc[df_test.index])
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
+        df_train, df_test = (df.loc[df_train.index], df.loc[df_test.index])
+        normalize_df_(df_train, df_test=df_test, skip_column=y_columns[0])
+        self.x, self.y = xy_split(df_train if train else df_test, y_columns)
         self.y = self.y[:, 0]  # Flatten for classification
 
 
@@ -128,12 +128,11 @@ class AirQuality(Dataset):
         df = df.applymap(lambda x: float(x.replace(',', '.')) if type(x) is str else x)  # Target as float
 
         df = df[df['C6H6(GT)'] != -200]  # Drop all rows with missing target values
-        df['CO(GT)'][df['CO(GT)'] == -200] = -10  # -200 means missing value, shifting this to be closer to
+        df.loc[df['CO(GT)'] == -200, 'CO(GT)'] = -10  # -200 means missing value, shifting this to be closer to
         # the other values for this column
 
         y_columns = ['C6H6(GT)']
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class APSFailure(Dataset):
@@ -152,12 +151,21 @@ class APSFailure(Dataset):
         url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_test_set.csv'
         download_file(url_train, dataset_path, file_name_train)
         download_file(url_test, dataset_path, file_name_test)
-        file_path = os.path.join(dataset_path, file_name_train if train else file_name_test)
-        df = pd.read_csv(file_path, skiprows=20, na_values='na')
-        clean_na_(df)
+        file_path_train = os.path.join(dataset_path, file_name_train)
+        file_path_test = os.path.join(dataset_path, file_name_train)
+        df_train = pd.read_csv(file_path_train, skiprows=20, na_values='na')
+        df_test = pd.read_csv(file_path_train, skiprows=20, na_values='na')
+
+        # TODO This is risky business since test and train might be cleaned to have different columns
+        clean_na_(df_train)
+        clean_na_(df_test)
+        if not (df_train.columns == df_test.columns).all():
+            raise Exception('Cleaning lead to different set of columns for train/test')
+
         y_columns = ['class']
-        label_encode_df_(df, y_columns[0])
-        self.x, self.y = xy_split(df, y_columns)
+        label_encode_df_([df_train, df_test], y_columns[0])
+        normalize_df_(df_train, df_test=df_test, skip_column=y_columns[0])
+        self.x, self.y = xy_split(df_train if train else df_test, y_columns)
         self.y = self.y[:, 0]
 
 
@@ -175,10 +183,12 @@ class Avila(Dataset):
         download_unzip(url, dataset_path)
         file_path_train = os.path.join(dataset_path, 'avila', 'avila-tr.txt')
         file_path_test = os.path.join(dataset_path, 'avila', 'avila-ts.txt')
-        df = pd.read_csv(file_path_train if train else file_path_test, header=None)
+        df_train = pd.read_csv(file_path_train, header=None)
+        df_test = pd.read_csv(file_path_test, header=None)
         y_columns = [10]
-        label_encode_df_(df, y_columns[0])  # Assumes encoding will be identical for train/test
-        self.x, self.y = xy_split(df, y_columns)
+        label_encode_df_([df_train, df_test], y_columns[0])  # Assumes encoding will be identical for train/test
+        normalize_df_(df_train, df_test=df_test, skip_column=y_columns[0])
+        self.x, self.y = xy_split(df_train if train else df_test, y_columns)
         self.y = self.y[:, 0]
 
 
@@ -199,9 +209,7 @@ class BankMarketing(Dataset):
         y_columns = ['y']
         one_hot_encode_df_(df, skip_columns=y_columns)
         label_encode_df_(df, y_columns[0])
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
-        self.y = self.y[:, 0]
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class BlogFeedback(Dataset):
@@ -229,10 +237,11 @@ class BlogFeedback(Dataset):
 
         file_path = os.path.join(dataset_path, file_name)
         df_train = pd.read_csv(file_path, header=None)
-        df = df_train if train else df_test
         y_columns = [280]
-        df[y_columns[0]] = np.log(df[y_columns[0]] + 0.01)
-        self.x, self.y = xy_split(df, y_columns)
+        df_train[y_columns[0]] = np.log(df_train[y_columns[0]] + 0.01)
+        df_test[y_columns[0]] = np.log(df_test[y_columns[0]] + 0.01)
+        normalize_df_(df_train, df_test=df_test)
+        self.x, self.y = xy_split(df_train if train else df_test, y_columns)
 
 
 class CardDefault(Dataset):
@@ -252,9 +261,7 @@ class CardDefault(Dataset):
         download_file(url, dataset_path, filename)
         df = pd.read_excel(file_path, skiprows=1, index_col='ID')
         y_columns = ['default payment next month']
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
-        self.y = self.y[:, 0]  # Flatten for classification
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class CTSlices(Dataset):
@@ -278,6 +285,7 @@ class CTSlices(Dataset):
         df_train = df_train.drop(columns='patientId')
         df_test = df_test.drop(columns='patientId')
         y_columns = ['reference']
+        normalize_df_(df_train, df_test=df_test)
         self.x, self.y = xy_split(df_train if train else df_test, y_columns)
 
 
@@ -298,12 +306,11 @@ class FacebookComments(Dataset):
         # The 5th variant has the most data
         train_path = os.path.join(dataset_path, 'Training', 'Features_Variant_5.csv')
         test_path = os.path.join(dataset_path, 'Testing', 'Features_TestSet.csv')
-        if train:
-            df = pd.read_csv(train_path, header=None)
-        else:
-            df = pd.read_csv(test_path, header=None)
-        y_columns = df.columns[-1:]
-        self.x, self.y = xy_split(df, y_columns)
+        df_train = pd.read_csv(train_path, header=None)
+        df_test = pd.read_csv(test_path, header=None)
+        y_columns = df_train.columns[-1:]
+        normalize_df_(df_train, df_test=df_test)
+        self.x, self.y = xy_split(df_train if train else df_test, y_columns)
 
 
 class Landsat(Dataset):
@@ -326,8 +333,7 @@ class Landsat(Dataset):
         df = pd.read_csv(file_path, sep=' ', header=None)
         y_columns = [36]
         label_encode_df_(df, y_columns[0])
-        self.x, self.y = xy_split(df, y_columns)
-        self.y = self.y[:, 0]
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class LetterRecognition(Dataset):
@@ -347,9 +353,7 @@ class LetterRecognition(Dataset):
         df = pd.read_csv(file_path, header=None)
         y_columns = [0]
         label_encode_df_(df, y_columns[0])
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
-        self.y = self.y[:, 0]
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class MagicGamma(Dataset):
@@ -369,9 +373,7 @@ class MagicGamma(Dataset):
         df = pd.read_csv(file_path, header=None)
         y_columns = [10]
         label_encode_df_(df, y_columns[0])
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
-        self.y = self.y[:, 0]  # Flatten for classification
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class OnlineNews(Dataset):
@@ -391,8 +393,7 @@ class OnlineNews(Dataset):
         df.drop(columns=['url', ' timedelta'], inplace=True)
         y_columns = [' shares']
         df[y_columns[0]] = np.log(df[y_columns[0]])
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
+        self.x, self. y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class Parkinson(Dataset):
@@ -417,8 +418,9 @@ class Parkinson(Dataset):
         df_test = df[df['subject#'] > 30]
         df_train = df_train.drop(columns='subject#')
         df_test = df_test.drop(columns='subject#')
-        df_tuple = (df_test, df_train)
-        self.x, self.y = xy_split(df_tuple[train], y_columns)
+        normalize_df_(df_train, df_test=df_test)
+        df = df_train if train else df_test
+        self.x, self.y = xy_split(df, y_columns)
 
 
 class PowerPlant(Dataset):
@@ -436,8 +438,7 @@ class PowerPlant(Dataset):
         file_path = os.path.join(dataset_path, 'CCPP', 'Folds5x2_pp.xlsx')
         df = pd.read_excel(file_path)
         y_columns = ['PE']  # Not clear if this is the aim of the dataset
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[train - 1], y_columns)
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class SensorLessDrive(Dataset):
@@ -457,9 +458,7 @@ class SensorLessDrive(Dataset):
         df = pd.read_csv(file_path, header=None, sep=' ')
         y_columns = [48]
         label_encode_df_(df, y_columns[0])
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
-        self.y = self.y[:, 0]
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
 
 
 class Shuttle(Dataset):
@@ -479,16 +478,19 @@ class Shuttle(Dataset):
         file_path_train = os.path.join(dataset_path, file_name_train)
         file_path_test = os.path.join(dataset_path, file_name_test)
         file_name_z = 'train.z'
-        download_file(url_train, dataset_path, file_name_z)
-        path_z = os.path.join(dataset_path, file_name_z)
-        with open(path_z, 'rb') as f_in:
-            with open(file_path_train, 'wb') as f_out:
-                f_out.write(unlzw(f_in.read()))
-        download_file(url_test, dataset_path, file_name_test)
-        df = pd.read_csv(file_path_train if train else file_path_test, header=None, sep=' ')
+        fresh_download = download_file(url_train, dataset_path, file_name_z)
+        if fresh_download:
+            path_z = os.path.join(dataset_path, file_name_z)
+            with open(path_z, 'rb') as f_in:
+                with open(file_path_train, 'wb') as f_out:
+                    f_out.write(unlzw(f_in.read()))
+            download_file(url_test, dataset_path, file_name_test)
+        df_train = pd.read_csv(file_path_train, header=None, sep=' ')
+        df_test = pd.read_csv(file_path_train if train else file_path_test, header=None, sep=' ')
         y_columns = [9]
-        label_encode_df_(df, y_columns[0])
-        self.x, self.y = xy_split(df, y_columns)
+        label_encode_df_([df_train, df_test], y_columns[0])
+        normalize_df_(df_train, df_test=df_test, skip_column=y_columns[0])
+        self.x, self.y = xy_split(df_train if train else df_test, y_columns)
         self.y = self.y[:, 0]
 
 
@@ -507,5 +509,4 @@ class Superconductivity(Dataset):
         file_path = os.path.join(dataset_path, 'train.csv')
         df = pd.read_csv(file_path)
         y_columns = ['critical_temp']
-        df_tuple = train_test_split(df, train_size=0.8, random_state=0)
-        self.x, self.y = xy_split(df_tuple[1 - train], y_columns)
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
