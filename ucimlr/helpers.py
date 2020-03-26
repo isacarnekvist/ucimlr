@@ -6,6 +6,10 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
+# Cross imports, extract these to types, or preferably
+# different classes for regr. and classif.
+CLASSIFICATION = 'classification'
+
 
 def download_file(url, dataset_path, filename):
     """
@@ -60,6 +64,36 @@ def one_hot_encode_df_(df, skip_columns=None):
             df.drop(columns=col, inplace=True)
 
 
+def normalize_df_(df_train, *, df_test=None, skip_column=None):
+    """
+    Normalizes all columns of `df_train` to zero mean unit variance in place.
+    Optionally performs same transformation to `df_test`
+
+    # Parameters
+    skip_column (str, int): Column to omit, for example categorical targets.
+    """
+    if skip_column is None:
+        skip_columns = set()
+    else:
+        skip_columns = {skip_column}
+
+    # Skip where standard deviation is zero or close to zero
+    low_std_columns = df_train.columns[df_train.std() < 1e-6]
+    df_train.loc[:, low_std_columns] = 0
+    if df_test is not None:
+        df_test.loc[:, low_std_columns] = 0
+    skip_columns.update(set(low_std_columns))
+
+    columns = list(set(df_train.columns) - skip_columns)
+    mean = df_train[columns].mean(axis=0)
+    std = df_train[columns].std(axis=0)
+    df_train.loc[:, columns] -= mean
+    df_train.loc[:, columns] /= std
+    if df_test is not None:
+        df_test.loc[:, columns] -= mean
+        df_test.loc[:, columns] /= std
+
+
 def xy_split(df: pd.DataFrame, y_columns: list):
     """
     Takes a DataFrame and return X and Y numpy arrays where
@@ -70,13 +104,50 @@ def xy_split(df: pd.DataFrame, y_columns: list):
     return x, y
 
 
-def label_encode_df_(df, y_column):
-    y = df[y_column]
-    labels = LabelEncoder().fit_transform(y)
-    df[y_column] = labels
+def label_encode_df_(dfs, y_column):
+    """
+    Label encodes in place.
+
+    # Parameters
+    dfs:  DataFrame or list of DataFrames
+    y_column: The label column
+    """
+    if type(dfs) is not list:
+        dfs = [dfs]
+    ys = set()
+    for df in dfs:
+        ys.update(set(df[y_column]))
+    le = LabelEncoder().fit(list(ys))
+    for df in dfs:
+        df[y_column] = le.transform(df[y_column])
 
 
 def clean_na_(df):
     for column in df.columns:
         df[f'{column}_isnan'] = df[column].isna().astype(float)
     df.fillna(0.0, inplace=True)
+
+
+def train_test_split(df, fraction=0.8, random_state=0):
+    df_train = df.sample(frac=fraction, random_state=random_state)
+    df_test = df.drop(df_train.index)
+    return df_train, df_test
+
+
+def split_normalize_sequence(df, y_columns, train, dataset_type):
+    """
+    Performs the common sequence of operations:
+    train_test_split -> normalize -> x, y split
+    """
+    df_train, df_test = train_test_split(df)
+    if dataset_type == CLASSIFICATION:
+        normalize_df_(df_train, df_test=df_test, skip_column=y_columns[0])
+    else:
+        normalize_df_(df_train, df_test=df_test)
+    if train:
+        x, y = xy_split(df_train, y_columns)
+    else:
+        x, y = xy_split(df_test, y_columns)
+    if dataset_type == CLASSIFICATION:
+        y = y[:, 0]
+    return x, y

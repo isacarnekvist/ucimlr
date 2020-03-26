@@ -7,4 +7,4 @@ python:
 install:
   - pip install .
 script:
-  - python tests/all.py TestHelpers
+  - python tests/all.py
