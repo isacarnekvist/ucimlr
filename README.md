@@ -19,7 +19,7 @@ Link to [documentation](https://ucimlr.readthedocs.io/).
 ```
 from ucimlr import datasets
 abalone = datasets.Abalone()
-print(abalone.type)
+print(abalone.type_)
 >>> regression
 print(len(abalone))
 >>> 3341
