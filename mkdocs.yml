@@ -2,6 +2,7 @@ site_name: "UCIMLR"
 
 pages:
 - Home: index.md
+- Contributing: contrib.md
 - API:
   - ucimlr.datasets: datasets.md
 
