@@ -510,3 +510,32 @@ class Superconductivity(Dataset):
         df = pd.read_csv(file_path)
         y_columns = ['critical_temp']
         self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
+
+
+class WhiteWineQuality(Dataset):
+    """
+    Description of dataset [here](https://archive.ics.uci.edu/ml/datasets/Wine+Quality).
+
+    Citation:
+    ```
+    P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis.
+    Modeling wine preferences by data mining from physicochemical properties.
+    In Decision Support Systems, Elsevier, 47(4):547-553, 2009.
+    ```
+
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    train (bool): Whether to contain training or test set.
+    """
+    type_ = REGRESSION
+
+    def __init__(self, root, train=True):
+        dataset_path = os.path.join(root, self.name)
+        filename = 'data.csv'
+        file_path = os.path.join(dataset_path, filename)
+        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv'
+        download_file(url, dataset_path, filename)
+        df = pd.read_csv(file_path, sep=';')
+        self.df = df
+        y_columns = ['quality']
+        self.x, self.y = split_normalize_sequence(df, y_columns, train, self.type_)
