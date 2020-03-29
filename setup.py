@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='ucimlr',
-    version='0.0.5',
+    version='0.0.6',
     author='Isac Arnekvist',
     author_email='isac.arnekvist@gmail.com',
     description='Easy access to datasets from the UCI Machine Learning Repository',
