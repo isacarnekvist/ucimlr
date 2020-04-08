@@ -6,8 +6,9 @@ import datetime
 import numpy as np
 import pandas as pd
 
+from ucimlr import all_datasets
+from ucimlr.constants import TRAIN, VALIDATION, TEST, REGRESSION, CLASSIFICATION
 from ucimlr.helpers import one_hot_encode_df_, clean_na_, label_encode_df_, normalize_df_
-from ucimlr import all_datasets, CLASSIFICATION, REGRESSION
 
 dataset_path = 'dataset_test_stubs'
 
@@ -16,13 +17,13 @@ class TestDatasets(unittest.TestCase):
 
     def test_general(self):
         for dataset_cls in all_datasets:
-            for train in [False, True]:
-                dataset = dataset_cls(dataset_path, train=train)
+            for split in [TRAIN, VALIDATION, TEST]:
+                dataset = dataset_cls(dataset_path, split=split)
 
                 # Check numbers
                 self.assertFalse(np.isnan(dataset.x).any())
                 self.assertFalse(np.isnan(dataset.y).any())
-                self.assertTrue(np.isfinite(dataset.x).any())
+                self.assertTrue(np.isfinite(dataset.x).any(), msg=f'Dataset: {dataset.name}')
                 self.assertTrue(np.isfinite(dataset.y).any())
 
                 # Check shapes and number of classes
@@ -34,24 +35,24 @@ class TestDatasets(unittest.TestCase):
                     self.assertEqual(dataset.num_targets, dataset.y.shape[1])
                 elif dataset.type_ is CLASSIFICATION:
                     self.assertEqual(len(dataset.y.shape),  1,
-                                     msg='dataset.y should have one axis for classification')
+                                     msg=f'dataset.y should have one axis for classification. Dataset: {dataset.name}')
             end_time = datetime.datetime.now()
 
     def test_normalized(self):
         for dataset_cls in all_datasets:
-            dataset = dataset_cls(dataset_path, train=True)
+            dataset = dataset_cls(dataset_path, split=TRAIN)
             self.assertAlmostEqual(dataset.x.mean(), 0, delta=1e-4, msg=f'Dataset name: {dataset.name}')
 
             # Check standard deviations
-            std_is_1 = abs(dataset.x.std(axis=0) - 1) < 1e-2
-            std_is_0 = abs(dataset.x.std(axis=0) - 0) < 1e-2
-            self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1'
+            std_is_1 = abs(dataset.x.std(axis=0) - 1) < 0.05
+            std_is_0 = abs(dataset.x.std(axis=0) - 0) < 0.05
+            self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1 '
                                                              f'Dataset: {dataset.name}')
 
             if dataset.type_ == REGRESSION:
                 self.assertAlmostEqual(dataset.y.mean(), 0, delta=1e-4, msg=f'Dataset name: {dataset.name}')
-                std_is_1 = abs(dataset.y.std(axis=0) - 1) < 1e-2
-                std_is_0 = abs(dataset.y.std(axis=0) - 0) < 1e-2
+                std_is_1 = abs(dataset.y.std(axis=0) - 1) < 0.05
+                std_is_0 = abs(dataset.y.std(axis=0) - 0) < 0.05
                 self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1')
 
 
@@ -91,6 +92,52 @@ class TestHelpers(unittest.TestCase):
 
         # Columns with original std > 0 should now have std = 1
         self.assertAlmostEqual(self.df.age.std(), 1, delta=1e-1)
+
+    def test_split_df(self):
+        from ucimlr.helpers import split_df
+        df = pd.DataFrame({
+            'val1': range(10),
+        })
+        df5, df3, df2 = split_df(df, [0.5, 0.3, 0.2])
+        self.assertEqual(len(df5), 5)
+        self.assertEqual(len(df3), 3)
+        self.assertEqual(len(df2), 2)
+
+        df0, df10 = split_df(df, [0.0, 1.0])
+        self.assertEqual(len(df0), 0)
+        self.assertEqual(len(df10), 10)
+
+        df10, df0 = split_df(df, [1.0, 0.0])
+        self.assertEqual(len(df0), 0)
+        self.assertEqual(len(df10), 10)
+
+        def not_summing_to_one():
+            _, _ = split_df(df, [0.1, 0.2])
+        self.assertRaises(ValueError, not_summing_to_one)
+
+        # Check deterministic
+        df5_, df3_, df2_ = split_df(df, [0.5, 0.3, 0.2])
+        self.assertTrue((df5_ == df5).all().bool())
+        self.assertTrue((df3_ == df3).all().bool())
+        self.assertTrue((df2_ == df2).all().bool())
+
+    def test_split_df_on_column(self):
+        from ucimlr.helpers import split_df_on_column
+        df = pd.DataFrame({
+            'person': [0, 0, 1, 1, 2, 2, 3, 3],
+        })
+        df6, df2 = split_df_on_column(df, [0.75, 0.25], 'person')
+        self.assertEqual(len(df6), 6)
+        self.assertEqual(len(df2), 2)
+
+        # Check person column is split such that splits are disjoint
+        persons2 = set(df2.person.unique())
+        persons6 = set(df6.person.unique())
+        self.assertTrue(persons2.isdisjoint(persons6))
+
+        # Check  deterministic
+        df6_, df2_ = split_df_on_column(df, [0.75, 0.25], 'person')
+        self.assertTrue((df2_ == df2).all().bool())
 
 
 if __name__ == '__main__':

@@ -1,14 +1,27 @@
 import os
 import zipfile
+from copy import deepcopy
 from urllib import request
 
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
-# Cross imports, extract these to types, or preferably
-# different classes for regr. and classif.
-CLASSIFICATION = 'classification'
+from ucimlr.constants import CLASSIFICATION
+from ucimlr.constants import TRAIN, VALIDATION, TEST
+
+
+class RandomStateContext:
+    def __init__(self, seed=0):
+        self.original_state = 0
+        self.seed = seed
+
+    def __enter__(self):
+        self.original_state = np.random.get_state()
+        np.random.seed(self.seed)
+
+    def __exit__(self, type=None, value=None, traceback=None):
+        np.random.set_state(self.original_state)
 
 
 def download_file(url, dataset_path, filename):
@@ -64,12 +77,13 @@ def one_hot_encode_df_(df, skip_columns=None):
             df.drop(columns=col, inplace=True)
 
 
-def normalize_df_(df_train, *, df_test=None, skip_column=None):
+def normalize_df_(df_train, *, other_dfs=None, skip_column=None):
     """
     Normalizes all columns of `df_train` to zero mean unit variance in place.
-    Optionally performs same transformation to `df_test`
+    Optionally performs same transformation to `other_dfs`
 
     # Parameters
+    other_dfs [pd.DataFrame]: List of other DataFrames to apply transformation to
     skip_column (str, int): Column to omit, for example categorical targets.
     """
     if skip_column is None:
@@ -80,8 +94,9 @@ def normalize_df_(df_train, *, df_test=None, skip_column=None):
     # Skip where standard deviation is zero or close to zero
     low_std_columns = df_train.columns[df_train.std() < 1e-6]
     df_train.loc[:, low_std_columns] = 0
-    if df_test is not None:
-        df_test.loc[:, low_std_columns] = 0
+    if other_dfs is not None:
+        for df in other_dfs:
+            df.loc[:, low_std_columns] = 0
     skip_columns.update(set(low_std_columns))
 
     columns = list(set(df_train.columns) - skip_columns)
@@ -89,9 +104,10 @@ def normalize_df_(df_train, *, df_test=None, skip_column=None):
     std = df_train[columns].std(axis=0)
     df_train.loc[:, columns] -= mean
     df_train.loc[:, columns] /= std
-    if df_test is not None:
-        df_test.loc[:, columns] -= mean
-        df_test.loc[:, columns] /= std
+    if other_dfs is not None:
+        for df in other_dfs:
+            df.loc[:, columns] -= mean
+            df.loc[:, columns] /= std
 
 
 def xy_split(df: pd.DataFrame, y_columns: list):
@@ -128,26 +144,68 @@ def clean_na_(df):
     df.fillna(0.0, inplace=True)
 
 
-def train_test_split(df, fraction=0.8, random_state=0):
-    df_train = df.sample(frac=fraction, random_state=random_state)
-    df_test = df.drop(df_train.index)
-    return df_train, df_test
-
-
-def split_normalize_sequence(df, y_columns, train, dataset_type):
+def split_normalize_sequence(df: pd.DataFrame, y_columns, validation_size: float, split, dataset_type):
     """
     Performs the common sequence of operations:
     train_test_split -> normalize -> x, y split
     """
-    df_train, df_test = train_test_split(df)
+    df_train, df_valid, df_test = split_df(df, [0.8 - 0.8 * validation_size, 0.8 * validation_size, 0.2])
     if dataset_type == CLASSIFICATION:
-        normalize_df_(df_train, df_test=df_test, skip_column=y_columns[0])
+        normalize_df_(df_train, other_dfs=[df_valid, df_test], skip_column=y_columns[0])
     else:
-        normalize_df_(df_train, df_test=df_test)
-    if train:
-        x, y = xy_split(df_train, y_columns)
-    else:
-        x, y = xy_split(df_test, y_columns)
+        normalize_df_(df_train, other_dfs=[df_valid, df_test])
+    df_res = get_split(df_train, df_valid, df_test, split)
+    x, y = xy_split(df_res, y_columns)
     if dataset_type == CLASSIFICATION:
         y = y[:, 0]
     return x, y
+
+
+def split_df(df, fractions):
+    """
+    Randomly splits (always with same seed) the dataframe `df` into
+    `fractions`.
+    """
+    fractions = np.array(fractions)
+    if sum(fractions) != 1.0:
+        raise ValueError('Fractions must sum to one.')
+    for i in range(len(fractions)):
+        fraction = fractions[0]
+        sub_df = df.sample(frac=fraction, random_state=0)
+        yield sub_df
+        fractions = fractions[1:]
+        if sum(fractions) > 0:
+            fractions /= sum(fractions)
+        df = df.drop(sub_df.index)
+
+
+def split_df_on_column(df, fractions, column):
+    """
+    Randomly splits (always with same seed) the dataframe `df` into
+    `fractions`. Values in the `column` are disjoint over the splits.
+    """
+    fractions = np.array(fractions)
+    if sum(fractions) != 1.0:
+        raise ValueError('Fractions must sum to one.')
+    with RandomStateContext():
+        groups = np.random.permutation(df[column].unique())
+    for i in range(len(fractions)):
+        fraction = fractions[0]
+        groups_sample = groups[:int(fraction * len(groups))]
+        df_sample = deepcopy(df.loc[df[column].isin(groups_sample), :])
+        yield df_sample
+        fractions = fractions[1:]
+        if sum(fractions) > 0:
+            fractions /= sum(fractions)
+        df = df.drop(df_sample.index)
+
+
+def get_split(df_train, df_valid, df_test, split):
+    if split == TRAIN:
+        return df_train
+    elif split == VALIDATION:
+        return df_valid
+    elif split == TEST:
+        return df_test
+    else:
+        raise ValueError('split is not correct, see ucimlr.constants')

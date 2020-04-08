@@ -8,3 +8,5 @@ ucimlr.egg-info/
 ucimlr/__init__.pyc
 ucimlr/__pycache__/
 venv/
+.ipynb_checkpoints/
+Untitled.ipynb
