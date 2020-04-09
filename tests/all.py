@@ -1,7 +1,5 @@
 import os
-import sys
 import unittest
-import datetime
 
 import numpy as np
 import pandas as pd
@@ -18,7 +16,12 @@ class TestDatasets(unittest.TestCase):
     def test_general(self):
         for dataset_cls in all_datasets:
             for split in [TRAIN, VALIDATION, TEST]:
-                dataset = dataset_cls(dataset_path, split=split)
+                dataset = dataset_cls(dataset_path, split=split, validation_size=0.2)
+
+                # Tests specific to test split
+                if split == TEST:
+                    dataset_2 = dataset_cls(dataset_path, split=TEST, validation_size=0.8)
+                    self.check_deterministic_test_splits(dataset, dataset_2)
 
                 # Check numbers
                 self.assertFalse(np.isnan(dataset.x).any())
@@ -36,7 +39,21 @@ class TestDatasets(unittest.TestCase):
                 elif dataset.type_ is CLASSIFICATION:
                     self.assertEqual(len(dataset.y.shape),  1,
                                      msg=f'dataset.y should have one axis for classification. Dataset: {dataset.name}')
-            end_time = datetime.datetime.now()
+
+    def check_deterministic_test_splits(self, ds1, ds2):
+        """
+        We want the test sets to always be the same for comparability, while
+        the validation sets and training sets can vary.
+        """
+        for dataset_cls in all_datasets:
+            # We can't compare the numbers since normalization if different.
+            # Re-normalizing is not guaranteed to work, but since it is an affine
+            # transformation the ordering is preserved.
+            for d in range(ds1.num_features):
+                # Set to avoid arbitrary ordering of identical elements.
+                indices1 = np.array(set(ds1.x[:, d])).argsort()
+                indices2 = np.array(set(ds2.x[:, d])).argsort()
+                self.assertTrue((indices1 == indices2).all())
 
     def test_normalized(self):
         for dataset_cls in all_datasets:
@@ -92,6 +109,17 @@ class TestHelpers(unittest.TestCase):
 
         # Columns with original std > 0 should now have std = 1
         self.assertAlmostEqual(self.df.age.std(), 1, delta=1e-1)
+
+    def test_split_df_deterministic(self):
+        from ucimlr.helpers import split_df
+        df = pd.DataFrame({
+            'a': list(range(10))
+        })
+        df1, _, _ = split_df(df, [0.2, 0.4, 0.4])
+        df2, _, _ = split_df(df, [0.2, 0.7, 0.1])
+        df3, _, _ = split_df(df, [0.2, 0.1, 0.7])
+        self.assertTrue((df1 == df2).all().bool())
+        self.assertTrue((df2 == df3).all().bool())
 
     def test_split_df(self):
         from ucimlr.helpers import split_df
