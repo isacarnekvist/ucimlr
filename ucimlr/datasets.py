@@ -62,7 +62,7 @@ class Abalone(Dataset):
         df = pd.read_csv(file_path, header=None)
         y_columns = df.columns[-1:]
         one_hot_encode_df_(df)
-        df_train, df_valid, df_test = split_df(df, [0.8 - 0.8 * validation_size, 0.8 * validation_size, 0.2])
+        df_test, df_train, df_valid = split_df(df, [0.2, 0.8 - 0.8 * validation_size, 0.8 * validation_size])
         normalize_df_(df_train, other_dfs=[df_valid, df_test])
         df_res = get_split(df_train, df_valid, df_test, split)
         self.x, self.y = xy_split(df_res, y_columns)

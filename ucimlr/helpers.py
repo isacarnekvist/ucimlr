@@ -149,7 +149,7 @@ def split_normalize_sequence(df: pd.DataFrame, y_columns, validation_size: float
     Performs the common sequence of operations:
     train_test_split -> normalize -> x, y split
     """
-    df_train, df_valid, df_test = split_df(df, [0.8 - 0.8 * validation_size, 0.8 * validation_size, 0.2])
+    df_test, df_train, df_valid = split_df(df, [0.2, 0.8 - 0.8 * validation_size, 0.8 * validation_size])
     if dataset_type == CLASSIFICATION:
         normalize_df_(df_train, other_dfs=[df_valid, df_test], skip_column=y_columns[0])
     else:
@@ -161,13 +161,24 @@ def split_normalize_sequence(df: pd.DataFrame, y_columns, validation_size: float
     return x, y
 
 
-def split_df(df, fractions):
+def split_df(df: pd.DataFrame, fractions):
     """
     Randomly splits (always with same seed) the dataframe `df` into
     `fractions`.
+
+    If you want one split to be always the same (given the same fraction of course),
+    let that split be the first one. For example:
+    ```
+    df_test, df_train, df_valid = split_df(df, [0.2, 0.4, 0.4])
+    ```
+    or
+    ```
+    df_test, df_train, df_valid = split_df(df, [0.2, 0.7, 0.1])
+    ```
+    These always produce the same df_test.
     """
     fractions = np.array(fractions)
-    if sum(fractions) != 1.0:
+    if abs(1 - sum(fractions)) > 1e-6:
         raise ValueError('Fractions must sum to one.')
     for i in range(len(fractions)):
         fraction = fractions[0]
