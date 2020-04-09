@@ -44,7 +44,7 @@ class Dataset(abc.ABC):
 
 class Abalone(Dataset):
     """
-    Link to the dataset [description](https://archive.ics.uci.edu/ml/datasets/Abalone).
+    Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Abalone).
 
     # Parameters
     root (str): Local path for storing/reading dataset files.
@@ -57,7 +57,7 @@ class Abalone(Dataset):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
         file_path = os.path.join(dataset_path, filename)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
         download_file(url, dataset_path, filename)
         df = pd.read_csv(file_path, header=None)
         y_columns = df.columns[-1:]
@@ -83,8 +83,8 @@ class Adult(Dataset):
         filename_test = 'data_test.csv'
         file_path_train = os.path.join(dataset_path, filename_train)
         file_path_test = os.path.join(dataset_path, filename_test)
-        url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
-        url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test'
+        url_train = 'http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
+        url_test = 'http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test'
         download_file(url_train, dataset_path, filename_train)
         download_file(url_test, dataset_path, filename_test)
 
@@ -119,7 +119,7 @@ class AirQuality(Dataset):
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         filename = 'AirQualityUCI.csv'
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00360/AirQualityUCI.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00360/AirQualityUCI.zip'
         download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, filename)
 
@@ -155,8 +155,8 @@ class APSFailure(Dataset):
         file_name_train = 'train.csv'
         file_name_test = 'test.csv'
         dataset_path = os.path.join(root, self.name)
-        url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_training_set.csv'
-        url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_test_set.csv'
+        url_train = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_training_set.csv'
+        url_test = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00421/aps_failure_test_set.csv'
         download_file(url_train, dataset_path, file_name_train)
         download_file(url_test, dataset_path, file_name_test)
         file_path_train = os.path.join(dataset_path, file_name_train)
@@ -190,7 +190,7 @@ class Avila(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00459/avila.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00459/avila.zip'
         download_unzip(url, dataset_path)
         file_path_train = os.path.join(dataset_path, 'avila', 'avila-tr.txt')
         file_path_test = os.path.join(dataset_path, 'avila', 'avila-ts.txt')
@@ -216,7 +216,7 @@ class BankMarketing(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip'
         download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'bank-additional', 'bank-additional-full.csv')
         df = pd.read_csv(file_path, sep=';')
@@ -240,7 +240,7 @@ class BlogFeedback(Dataset):
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'blogData_train.csv'
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00304/BlogFeedback.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00304/BlogFeedback.zip'
         download_unzip(url, dataset_path)
 
         # Iterate all test csv and concatenate to one DataFrame
@@ -283,7 +283,7 @@ class CardDefault(Dataset):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.xls'
         file_path = os.path.join(dataset_path, filename)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/' \
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00350/' \
               'default%20of%20credit%20card%20clients.xls'
         download_file(url, dataset_path, filename)
         df = pd.read_excel(file_path, skiprows=1, index_col='ID')
@@ -302,7 +302,7 @@ class CTSlices(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00206/slice_localization_data.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00206/slice_localization_data.zip'
         download_unzip(url, dataset_path)
         file_name = 'slice_localization_data.csv'
         file_path = os.path.join(dataset_path, file_name)
@@ -342,7 +342,7 @@ class FacebookComments(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00363/Dataset.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00363/Dataset.zip'
         download_unzip(url, dataset_path)
         dataset_path = os.path.join(dataset_path, 'Dataset')
 
@@ -380,8 +380,8 @@ class Landsat(Dataset):
         dataset_path = os.path.join(root, self.name)
         file_name_train = 'train.csv'
         file_name_test = 'test.csv'
-        url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/satimage/sat.trn'
-        url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/satimage/sat.tst'
+        url_train = 'http://archive.ics.uci.edu/ml/machine-learning-databases/statlog/satimage/sat.trn'
+        url_test = 'http://archive.ics.uci.edu/ml/machine-learning-databases/statlog/satimage/sat.tst'
         download_file(url_train, dataset_path, file_name_train)
         download_file(url_test, dataset_path, file_name_test)
         file_path_train = os.path.join(dataset_path, file_name_train)
@@ -413,7 +413,7 @@ class LetterRecognition(Dataset):
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'data.csv'
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/letter-recognition/letter-recognition.data'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/letter-recognition/letter-recognition.data'
         download_file(url, dataset_path, file_name)
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path, header=None)
@@ -434,7 +434,7 @@ class MagicGamma(Dataset):
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'data.csv'
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/magic/magic04.data'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/magic/magic04.data'
         download_file(url, dataset_path, file_name)
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path, header=None)
@@ -454,7 +454,7 @@ class OnlineNews(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00332/OnlineNewsPopularity.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00332/OnlineNewsPopularity.zip'
         download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'OnlineNewsPopularity', 'OnlineNewsPopularity.csv')
         df = pd.read_csv(file_path, )
@@ -479,7 +479,7 @@ class Parkinson(Dataset):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
         file_path: str = os.path.join(dataset_path, filename)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/' \
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/' \
               'parkinsons/telemonitoring/parkinsons_updrs.data'
         download_file(url, dataset_path, filename)
         df = pd.read_csv(file_path)
@@ -506,7 +506,7 @@ class PowerPlant(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00294/CCPP.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00294/CCPP.zip'
         download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'CCPP', 'Folds5x2_pp.xlsx')
         df = pd.read_excel(file_path)
@@ -526,7 +526,7 @@ class SensorLessDrive(Dataset):
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'data.csv'
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00325/Sensorless_drive_diagnosis.txt'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00325/Sensorless_drive_diagnosis.txt'
         download_file(url, dataset_path, file_name)
         file_path = os.path.join(dataset_path, file_name)
         df = pd.read_csv(file_path, header=None, sep=' ')
@@ -548,8 +548,8 @@ class Shuttle(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url_train = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/shuttle/shuttle.trn.Z'
-        url_test = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/shuttle/shuttle.tst'
+        url_train = 'http://archive.ics.uci.edu/ml/machine-learning-databases/statlog/shuttle/shuttle.trn.Z'
+        url_test = 'http://archive.ics.uci.edu/ml/machine-learning-databases/statlog/shuttle/shuttle.tst'
         file_name_train = 'train.csv'
         file_name_test = 'test.csv'
         file_path_train = os.path.join(dataset_path, file_name_train)
@@ -584,7 +584,7 @@ class Superconductivity(Dataset):
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00464/superconduct.zip'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00464/superconduct.zip'
         download_unzip(url, dataset_path)
         file_path = os.path.join(dataset_path, 'train.csv')
         df = pd.read_csv(file_path)
@@ -594,7 +594,7 @@ class Superconductivity(Dataset):
 
 class WhiteWineQuality(Dataset):
     """
-    Description of dataset [here](https://archive.ics.uci.edu/ml/datasets/Wine+Quality).
+    Description of dataset [here](http://archive.ics.uci.edu/ml/datasets/Wine+Quality).
 
     Citation:
     ```
@@ -614,7 +614,7 @@ class WhiteWineQuality(Dataset):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
         file_path = os.path.join(dataset_path, filename)
-        url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv'
         download_file(url, dataset_path, filename)
         df = pd.read_csv(file_path, sep=';')
         y_columns = ['quality']
