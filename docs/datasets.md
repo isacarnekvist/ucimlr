@@ -9,7 +9,7 @@ class Abalone(Dataset):
  |  Abalone(root, split=TRAIN, validation_size=0.2)
 ```
 
-Link to the dataset [description](https://archive.ics.uci.edu/ml/datasets/Abalone).
+Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Abalone).
 
 __Parameters__
 
@@ -297,7 +297,7 @@ class WhiteWineQuality(Dataset):
  |  WhiteWineQuality(root, split=TRAIN, validation_size=0.2)
 ```
 
-Description of dataset [here](https://archive.ics.uci.edu/ml/datasets/Wine+Quality).
+Description of dataset [here](http://archive.ics.uci.edu/ml/datasets/Wine+Quality).
 
 Citation:
 ```
