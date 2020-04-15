@@ -149,7 +149,12 @@ def split_normalize_sequence(df: pd.DataFrame, y_columns, validation_size: float
     Performs the common sequence of operations:
     train_test_split -> normalize -> x, y split
     """
-    df_test, df_train, df_valid = split_df(df, [0.2, 0.8 - 0.8 * validation_size, 0.8 * validation_size])
+    if dataset_type == CLASSIFICATION:
+        df_test, df_train, df_valid = split_classification_df(df,
+                                                              [0.2, 0.8 - 0.8 * validation_size, 0.8 * validation_size],
+                                                              y_columns[0])
+    else:
+        df_test, df_train, df_valid = split_df(df, [0.2, 0.8 - 0.8 * validation_size, 0.8 * validation_size])
     if dataset_type == CLASSIFICATION:
         normalize_df_(df_train, other_dfs=[df_valid, df_test], skip_column=y_columns[0])
     else:
@@ -188,6 +193,31 @@ def split_df(df: pd.DataFrame, fractions):
         if sum(fractions) > 0:
             fractions /= sum(fractions)
         df = df.drop(sub_df.index)
+
+
+def split_classification_df(df, fractions, y_column):
+    """
+    Like split_df but groups into respective classes and then samples
+    fractions of those groups. Makes sure that:
+    1) No labels/classes are missing from any of the splits
+    2) The proportions of classes are the same in all splits
+    """
+    fractions = np.array(fractions)
+    splits = [pd.DataFrame(columns=df.columns)] * len(fractions)
+    for i in range(len(fractions)):
+        fraction = fractions[0]
+        for value, group in df.groupby(y_column):
+            sample = group.sample(frac=fraction, random_state=0)
+            splits[i] = splits[i].append(sample)
+            df = df.drop(sample.index)
+        fractions = fractions[1:]
+        if fractions.sum() > 0:
+            fractions /= fractions.sum()
+    # np.isnan crashes if this cast is not done
+    for i, split in enumerate(splits):
+        splits[i] = split.astype(np.float32)
+        splits[i].loc[:, y_column] = split.loc[:, y_column].astype(np.int)
+    return splits
 
 
 def split_df_on_column(df, fractions, column):

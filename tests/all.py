@@ -1,4 +1,5 @@
 import os
+import sys
 import unittest
 
 import numpy as np
@@ -15,10 +16,18 @@ class TestDatasets(unittest.TestCase):
 
     def test_general(self):
         for dataset_cls in all_datasets:
+            print('Checking dataset:', dataset_cls.__name__, file=sys.stderr)
             for split in [TRAIN, VALIDATION, TEST]:
+                print('Checking split:', split, file=sys.stderr)
                 dataset = dataset_cls(dataset_path, split=split, validation_size=0.2)
 
-                # Tests specific to test split
+                if dataset.type_ == CLASSIFICATION:
+                    self.assertTrue(hasattr(dataset, 'num_classes'))
+                    self.assertEqual(set(dataset.y), set(range(dataset.num_classes)))
+
+                if split == TRAIN:
+                    self.check_normalized(dataset)
+
                 if split == TEST:
                     dataset_2 = dataset_cls(dataset_path, split=TEST, validation_size=0.8)
                     self.check_deterministic_test_splits(dataset, dataset_2)
@@ -55,22 +64,20 @@ class TestDatasets(unittest.TestCase):
                 indices2 = np.array(set(ds2.x[:, d])).argsort()
                 self.assertTrue((indices1 == indices2).all())
 
-    def test_normalized(self):
-        for dataset_cls in all_datasets:
-            dataset = dataset_cls(dataset_path, split=TRAIN)
-            self.assertAlmostEqual(dataset.x.mean(), 0, delta=1e-4, msg=f'Dataset name: {dataset.name}')
+    def check_normalized(self, dataset):
+        self.assertAlmostEqual(dataset.x.mean(), 0, delta=0.05, msg=f'Dataset name: {dataset.name}')
 
-            # Check standard deviations
-            std_is_1 = abs(dataset.x.std(axis=0) - 1) < 0.05
-            std_is_0 = abs(dataset.x.std(axis=0) - 0) < 0.05
-            self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1 '
-                                                             f'Dataset: {dataset.name}')
+        # Check standard deviations
+        std_is_1 = abs(dataset.x.std(axis=0) - 1) < 0.05
+        std_is_0 = abs(dataset.x.std(axis=0) - 0) < 0.05
+        self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1 '
+                                                         f'Dataset: {dataset.name}')
 
-            if dataset.type_ == REGRESSION:
-                self.assertAlmostEqual(dataset.y.mean(), 0, delta=1e-4, msg=f'Dataset name: {dataset.name}')
-                std_is_1 = abs(dataset.y.std(axis=0) - 1) < 0.05
-                std_is_0 = abs(dataset.y.std(axis=0) - 0) < 0.05
-                self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1')
+        if dataset.type_ == REGRESSION:
+            self.assertAlmostEqual(dataset.y.mean(), 0, delta=0.05, msg=f'Dataset name: {dataset.name}')
+            std_is_1 = abs(dataset.y.std(axis=0) - 1) < 0.05
+            std_is_0 = abs(dataset.y.std(axis=0) - 0) < 0.05
+            self.assertTrue((std_is_0 | std_is_1).all(), msg='Standard deviation should be close to either 0 or 1')
 
 
 class TestHelpers(unittest.TestCase):
