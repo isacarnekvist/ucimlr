@@ -7,8 +7,9 @@ import pandas as pd
 from unlzw import unlzw
 
 from ucimlr.helpers import (download_file, download_unzip, one_hot_encode_df_, xy_split, label_encode_df_,
-                            clean_na_, normalize_df_, split_normalize_sequence, split_df, get_split, split_df_on_column)
-from ucimlr.constants import TRAIN, VALIDATION, TEST
+                            clean_na_, normalize_df_, split_normalize_sequence, split_df, get_split, split_df_on_column,
+                            split_classification_df)
+from ucimlr.constants import TRAIN, VALIDATION
 from ucimlr.constants import REGRESSION, CLASSIFICATION
 
 
@@ -27,22 +28,24 @@ class Dataset(abc.ABC):
     def num_features(self):
         return self.x.shape[1]
 
+
+class ClassificationDataset(Dataset):
+    type_ = CLASSIFICATION  # Is this necessary?
+
     @property
     def num_classes(self):
-        if self.type_ == REGRESSION:
-            raise ValueError('num_classes is only valid for classification, see num_targets')
-        else:
-            return len(set(self.y))  # TODO This is not a good way apparently
+        raise NotImplementedError('A classification dataset needs to have attribute `num_classes`.')
+
+
+class RegressionDataset(Dataset):
+    type_ = REGRESSION  # Is this necessary?
 
     @property
     def num_targets(self):
-        if self.type_ == CLASSIFICATION:
-            raise ValueError('num_targets is only valid for regression, see num_classes')
-        else:
-            return self.y.shape[1]
+        return self.y.shape[1]
 
 
-class Abalone(Dataset):
+class Abalone(RegressionDataset):
     """
     Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Abalone).
 
@@ -51,8 +54,6 @@ class Abalone(Dataset):
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
@@ -68,14 +69,14 @@ class Abalone(Dataset):
         self.x, self.y = xy_split(df_res, y_columns)
 
 
-class Adult(Dataset):
+class Adult(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 2
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
@@ -107,15 +108,13 @@ class Adult(Dataset):
         self.y = self.y[:, 0]  # Flatten for classification
 
 
-class AirQuality(Dataset):
+class AirQuality(RegressionDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         filename = 'AirQualityUCI.csv'
@@ -142,14 +141,14 @@ class AirQuality(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class APSFailure(Dataset):
+class APSFailure(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 2
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name_train = 'train.csv'
@@ -179,14 +178,14 @@ class APSFailure(Dataset):
         self.y = self.y[:, 0]
 
 
-class Avila(Dataset):
+class Avila(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 12
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
@@ -198,21 +197,23 @@ class Avila(Dataset):
         df_test = pd.read_csv(file_path_test, header=None)
         y_columns = [10]
         label_encode_df_([df_train_valid, df_test], y_columns[0])  # Assumes encoding will be identical for train/test
-        df_train, df_valid = split_df(df_train_valid, [1 - validation_size, validation_size])
+        df_train, df_valid = split_classification_df(df_train_valid,
+                                                     [1 - validation_size, validation_size],
+                                                     y_columns[0])
         normalize_df_(df_train, other_dfs=[df_valid, df_test], skip_column=y_columns[0])
         df_res = get_split(df_train, df_valid, df_test, split)
         self.x, self.y = xy_split(df_res, y_columns)
         self.y = self.y[:, 0]
 
 
-class BankMarketing(Dataset):
+class BankMarketing(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 2
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
@@ -226,7 +227,7 @@ class BankMarketing(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class BlogFeedback(Dataset):
+class BlogFeedback(RegressionDataset):
     """
     Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/BlogFeedback).
 
@@ -235,8 +236,6 @@ class BlogFeedback(Dataset):
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'blogData_train.csv'
         dataset_path = os.path.join(root, self.name)
@@ -270,14 +269,14 @@ class BlogFeedback(Dataset):
         self.x, self.y = xy_split(df_res, y_columns)
 
 
-class CardDefault(Dataset):
+class CardDefault(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 2
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
@@ -291,15 +290,13 @@ class CardDefault(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class CTSlices(Dataset):
+class CTSlices(RegressionDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00206/slice_localization_data.zip'
@@ -318,7 +315,7 @@ class CTSlices(Dataset):
         self.x, self.y = xy_split(df_res, y_columns)
 
 
-class FacebookComments(Dataset):
+class FacebookComments(RegressionDataset):
     """
     Predict the number of likes on posts from a collection of Facebook pages.
     Every page has multiple posts, making the number of pages less than the samples
@@ -338,8 +335,6 @@ class FacebookComments(Dataset):
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00363/Dataset.zip'
@@ -367,14 +362,14 @@ class FacebookComments(Dataset):
         self.x, self.y = xy_split(df_res, y_columns)
 
 
-class Landsat(Dataset):
+class Landsat(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 6
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
@@ -394,21 +389,21 @@ class Landsat(Dataset):
         label_encode_df_(df, y_columns[0])
         df_train_valid = df.loc[df_train_valid.index, :]
         df_test = df.loc[df_test.index, :]
-        df_train, df_valid = split_df(df_train_valid, [1 - validation_size, validation_size])
+        df_train, df_valid = split_classification_df(df_train_valid, [1 - validation_size, validation_size], 36)
         normalize_df_(df_train, other_dfs=[df_valid, df_test], skip_column=y_columns[0])
         df_res = get_split(df_train, df_valid, df_test, split)
         self.x, self.y = xy_split(df_res, y_columns)
         self.y = self.y[:, 0]
 
 
-class LetterRecognition(Dataset):
+class LetterRecognition(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 26
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'data.csv'
@@ -422,14 +417,14 @@ class LetterRecognition(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class MagicGamma(Dataset):
+class MagicGamma(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 2
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'data.csv'
@@ -443,15 +438,13 @@ class MagicGamma(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class OnlineNews(Dataset):
+class OnlineNews(RegressionDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00332/OnlineNewsPopularity.zip'
@@ -464,7 +457,7 @@ class OnlineNews(Dataset):
         self.x, self. y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class Parkinson(Dataset):
+class Parkinson(RegressionDataset):
     """
     Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/parkinsons).
 
@@ -473,8 +466,6 @@ class Parkinson(Dataset):
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
@@ -495,15 +486,13 @@ class Parkinson(Dataset):
         self.x, self.y = xy_split(df_res, y_columns)
 
 
-class PowerPlant(Dataset):
+class PowerPlant(RegressionDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00294/CCPP.zip'
@@ -514,14 +503,14 @@ class PowerPlant(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class SensorLessDrive(Dataset):
+class SensorLessDrive(ClassificationDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 11
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         file_name = 'data.csv'
@@ -535,7 +524,7 @@ class SensorLessDrive(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class Shuttle(Dataset):
+class Shuttle(ClassificationDataset):
     """
     Description of dataset [here](http://archive.ics.uci.edu/ml/datasets/Statlog+(Shuttle)).
 
@@ -544,7 +533,7 @@ class Shuttle(Dataset):
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = CLASSIFICATION
+    num_classes = 7
 
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
@@ -563,9 +552,11 @@ class Shuttle(Dataset):
                     f_out.write(unlzw(f_in.read()))
             download_file(url_test, dataset_path, file_name_test)
         df_train_valid = pd.read_csv(file_path_train, header=None, sep=' ')
-        df_train, df_valid = split_df(df_train_valid, [1 - validation_size, validation_size])
-        df_test = pd.read_csv(file_path_test, header=None, sep=' ')
         y_columns = [9]
+        df_train, df_valid = split_classification_df(df_train_valid,
+                                                     [1 - validation_size, validation_size],
+                                                     y_columns[0])
+        df_test = pd.read_csv(file_path_test, header=None, sep=' ')
         label_encode_df_([df_train, df_valid, df_test], y_columns[0])
         normalize_df_(df_train, other_dfs=[df_valid, df_test], skip_column=y_columns[0])
         df_res = get_split(df_train, df_valid, df_test, split)
@@ -573,15 +564,13 @@ class Shuttle(Dataset):
         self.y = self.y[:, 0]
 
 
-class Superconductivity(Dataset):
+class Superconductivity(RegressionDataset):
     """
     # Parameters
     root (str): Local path for storing/reading dataset files.
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00464/superconduct.zip'
@@ -592,7 +581,7 @@ class Superconductivity(Dataset):
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 
-class WhiteWineQuality(Dataset):
+class WhiteWineQuality(RegressionDataset):
     """
     Description of dataset [here](http://archive.ics.uci.edu/ml/datasets/Wine+Quality).
 
@@ -608,8 +597,6 @@ class WhiteWineQuality(Dataset):
     split (str): One of {'train', 'validation', 'test'}
     validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
     """
-    type_ = REGRESSION
-
     def __init__(self, root, split=TRAIN, validation_size=0.2):
         dataset_path = os.path.join(root, self.name)
         filename = 'data.csv'
@@ -619,9 +606,3 @@ class WhiteWineQuality(Dataset):
         df = pd.read_csv(file_path, sep=';')
         y_columns = ['quality']
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
-
-
-if __name__ == '__main__':
-    for split_ in [TRAIN]:
-        ds = BlogFeedback('datasets', split=split_, validation_size=0.2)
-        print(ds.x.std(axis=0))

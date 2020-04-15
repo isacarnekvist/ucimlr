@@ -5,7 +5,7 @@
 ### Abalone
 
 ```python
-class Abalone(Dataset):
+class Abalone(RegressionDataset):
  |  Abalone(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -21,7 +21,7 @@ __Parameters__
 ### Adult
 
 ```python
-class Adult(Dataset):
+class Adult(ClassificationDataset):
  |  Adult(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -35,7 +35,7 @@ __Parameters__
 ### AirQuality
 
 ```python
-class AirQuality(Dataset):
+class AirQuality(RegressionDataset):
  |  AirQuality(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -49,7 +49,7 @@ __Parameters__
 ### APSFailure
 
 ```python
-class APSFailure(Dataset):
+class APSFailure(ClassificationDataset):
  |  APSFailure(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -63,7 +63,7 @@ __Parameters__
 ### Avila
 
 ```python
-class Avila(Dataset):
+class Avila(ClassificationDataset):
  |  Avila(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -77,7 +77,7 @@ __Parameters__
 ### BankMarketing
 
 ```python
-class BankMarketing(Dataset):
+class BankMarketing(ClassificationDataset):
  |  BankMarketing(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -91,7 +91,7 @@ __Parameters__
 ### BlogFeedback
 
 ```python
-class BlogFeedback(Dataset):
+class BlogFeedback(RegressionDataset):
  |  BlogFeedback(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -107,7 +107,7 @@ __Parameters__
 ### CardDefault
 
 ```python
-class CardDefault(Dataset):
+class CardDefault(ClassificationDataset):
  |  CardDefault(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -121,7 +121,7 @@ __Parameters__
 ### CTSlices
 
 ```python
-class CTSlices(Dataset):
+class CTSlices(RegressionDataset):
  |  CTSlices(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -135,7 +135,7 @@ __Parameters__
 ### FacebookComments
 
 ```python
-class FacebookComments(Dataset):
+class FacebookComments(RegressionDataset):
  |  FacebookComments(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -163,7 +163,7 @@ __Parameters__
 ### Landsat
 
 ```python
-class Landsat(Dataset):
+class Landsat(ClassificationDataset):
  |  Landsat(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -177,7 +177,7 @@ __Parameters__
 ### LetterRecognition
 
 ```python
-class LetterRecognition(Dataset):
+class LetterRecognition(ClassificationDataset):
  |  LetterRecognition(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -191,7 +191,7 @@ __Parameters__
 ### MagicGamma
 
 ```python
-class MagicGamma(Dataset):
+class MagicGamma(ClassificationDataset):
  |  MagicGamma(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -205,7 +205,7 @@ __Parameters__
 ### OnlineNews
 
 ```python
-class OnlineNews(Dataset):
+class OnlineNews(RegressionDataset):
  |  OnlineNews(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -219,7 +219,7 @@ __Parameters__
 ### Parkinson
 
 ```python
-class Parkinson(Dataset):
+class Parkinson(RegressionDataset):
  |  Parkinson(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -235,7 +235,7 @@ __Parameters__
 ### PowerPlant
 
 ```python
-class PowerPlant(Dataset):
+class PowerPlant(RegressionDataset):
  |  PowerPlant(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -249,7 +249,7 @@ __Parameters__
 ### SensorLessDrive
 
 ```python
-class SensorLessDrive(Dataset):
+class SensorLessDrive(ClassificationDataset):
  |  SensorLessDrive(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -263,7 +263,7 @@ __Parameters__
 ### Shuttle
 
 ```python
-class Shuttle(Dataset):
+class Shuttle(ClassificationDataset):
  |  Shuttle(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -279,7 +279,7 @@ __Parameters__
 ### Superconductivity
 
 ```python
-class Superconductivity(Dataset):
+class Superconductivity(RegressionDataset):
  |  Superconductivity(root, split=TRAIN, validation_size=0.2)
 ```
 
@@ -293,7 +293,7 @@ __Parameters__
 ### WhiteWineQuality
 
 ```python
-class WhiteWineQuality(Dataset):
+class WhiteWineQuality(RegressionDataset):
  |  WhiteWineQuality(root, split=TRAIN, validation_size=0.2)
 ```
 
