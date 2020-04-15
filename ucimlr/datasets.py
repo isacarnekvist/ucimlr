@@ -108,6 +108,27 @@ class Adult(ClassificationDataset):
         self.y = self.y[:, 0]  # Flatten for classification
 
 
+class AirFoil(RegressionDataset):
+    """
+    Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Airfoil+Self-Noise).
+
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    split (str): One of {'train', 'validation', 'test'}
+    validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
+    """
+    def __init__(self, root, split=TRAIN, validation_size=0.2):
+        dataset_path = os.path.join(root, self.name)
+        filename = 'airfoil_self_noise.dat'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00291/airfoil_self_noise.dat'
+        download_file(url, dataset_path, filename)
+        file_path = os.path.join(dataset_path, filename)
+
+        df = pd.read_csv(file_path, sep='\t', header=None)
+        y_columns = [5]
+        self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
+
+
 class AirQuality(RegressionDataset):
     """
     # Parameters
@@ -500,6 +521,27 @@ class PowerPlant(RegressionDataset):
         file_path = os.path.join(dataset_path, 'CCPP', 'Folds5x2_pp.xlsx')
         df = pd.read_excel(file_path)
         y_columns = ['PE']  # Not clear if this is the aim of the dataset
+        self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
+
+
+class RealEstate(RegressionDataset):
+    """
+    Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Real+estate+valuation+data+set).
+
+    # Parameters
+    root (str): Local path for storing/reading dataset files.
+    split (str): One of {'train', 'validation', 'test'}
+    validation_size (float): How large fraction in (0, 1) of the training partition to use for validation.
+    """
+    def __init__(self, root, split=TRAIN, validation_size=0.2):
+        dataset_path = os.path.join(root, self.name)
+        filename = 'Real estate valuation data set.xlsx'
+        url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/00477/Real%20estate%20valuation%20data%20set.xlsx'
+        download_file(url, dataset_path, filename)
+        file_path = os.path.join(dataset_path, filename)
+
+        df = pd.read_excel(file_path, index_col='No')
+        y_columns = ['Y house price of unit area']
         self.x, self.y = split_normalize_sequence(df, y_columns, validation_size, split, self.type_)
 
 

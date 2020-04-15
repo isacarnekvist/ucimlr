@@ -31,6 +31,22 @@ __Parameters__
 - __split__ (`str`): One of {'train', 'validation', 'test'}
 - __validation_size__ (`float`): How large fraction in (0, 1) of the training partition to use for validation.
 
+<a name=".ucimlr.datasets.AirFoil"></a>
+### AirFoil
+
+```python
+class AirFoil(RegressionDataset):
+ |  AirFoil(root, split=TRAIN, validation_size=0.2)
+```
+
+Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Airfoil+Self-Noise).
+
+__Parameters__
+
+- __root__ (`str`): Local path for storing/reading dataset files.
+- __split__ (`str`): One of {'train', 'validation', 'test'}
+- __validation_size__ (`float`): How large fraction in (0, 1) of the training partition to use for validation.
+
 <a name=".ucimlr.datasets.AirQuality"></a>
 ### AirQuality
 
@@ -238,6 +254,22 @@ __Parameters__
 class PowerPlant(RegressionDataset):
  |  PowerPlant(root, split=TRAIN, validation_size=0.2)
 ```
+
+__Parameters__
+
+- __root__ (`str`): Local path for storing/reading dataset files.
+- __split__ (`str`): One of {'train', 'validation', 'test'}
+- __validation_size__ (`float`): How large fraction in (0, 1) of the training partition to use for validation.
+
+<a name=".ucimlr.datasets.RealEstate"></a>
+### RealEstate
+
+```python
+class RealEstate(RegressionDataset):
+ |  RealEstate(root, split=TRAIN, validation_size=0.2)
+```
+
+Link to the dataset [description](http://archive.ics.uci.edu/ml/datasets/Real+estate+valuation+data+set).
 
 __Parameters__
 
