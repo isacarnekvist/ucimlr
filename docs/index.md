@@ -13,8 +13,8 @@ on the [git repository](https://github.com/isacarnekvist/ucimlr).
 ## Basic usage
 
 ```
-from ucimlr import datasets
-abalone = datasets.Abalone()
+from ucimlr import regression_datasets
+abalone = regression_datasets.Abalone('dataset_folder')
 print(abalone.type_)
 >>> regression
 print(len(abalone))
@@ -34,4 +34,3 @@ Or by element access:
 ```
 x, y = dataset[0]
 ```
-

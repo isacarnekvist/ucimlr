@@ -15,7 +15,7 @@ dataset_path = 'dataset_test_stubs'
 class TestDatasets(unittest.TestCase):
 
     def test_general(self):
-        for dataset_cls in all_datasets:
+        for dataset_cls in all_datasets():
             print('Checking dataset:', dataset_cls.__name__, file=sys.stderr)
             for split in [TRAIN, VALIDATION, TEST]:
                 print('Checking split:', split, file=sys.stderr)
@@ -54,15 +54,11 @@ class TestDatasets(unittest.TestCase):
         We want the test sets to always be the same for comparability, while
         the validation sets and training sets can vary.
         """
-        for dataset_cls in all_datasets:
-            # We can't compare the numbers since normalization if different.
-            # Re-normalizing is not guaranteed to work, but since it is an affine
-            # transformation the ordering is preserved.
-            for d in range(ds1.num_features):
-                # Set to avoid arbitrary ordering of identical elements.
-                indices1 = np.array(set(ds1.x[:, d])).argsort()
-                indices2 = np.array(set(ds2.x[:, d])).argsort()
-                self.assertTrue((indices1 == indices2).all())
+        for d in range(ds1.num_features):
+            # Set to avoid arbitrary ordering of identical elements.
+            indices1 = np.array(set(ds1.x[:, d])).argsort()
+            indices2 = np.array(set(ds2.x[:, d])).argsort()
+            self.assertTrue((indices1 == indices2).all())
 
     def check_normalized(self, dataset):
         self.assertAlmostEqual(dataset.x.mean(), 0, delta=0.05, msg=f'Dataset name: {dataset.name}')
