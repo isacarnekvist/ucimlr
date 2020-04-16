@@ -4,6 +4,7 @@ pages:
 - Home: index.md
 - Contributing: contrib.md
 - API:
-  - ucimlr.datasets: datasets.md
+  - ucimlr.regression_datasets: regression_datasets.md
+  - ucimlr.classification_datasets: classification_datasets.md
 
 theme: readthedocs

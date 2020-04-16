@@ -13,7 +13,7 @@ def wasserstein(dataset_path):
     when running all tests.
     """
     from scipy.stats import wasserstein_distance
-    for dataset_cls in all_datasets:
+    for dataset_cls in all_datasets():
         print('Loading dataset:', dataset_cls.__name__)
         train = dataset_cls(dataset_path, split=TRAIN)
         valid = dataset_cls(dataset_path, split=VALIDATION)

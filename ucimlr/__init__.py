@@ -1,19 +1,3 @@
-import inspect
-
-from . import datasets
-from .datasets import CLASSIFICATION, REGRESSION
-
-all_datasets = [cls for _, cls in inspect.getmembers(datasets)
-                if inspect.isclass(cls)
-                and issubclass(cls, datasets.Dataset)
-                and cls != datasets.Dataset
-                and cls != datasets.ClassificationDataset
-                and cls != datasets.RegressionDataset]
-
-
-def regression_datasets():
-    return [ds for ds in all_datasets if ds.type_ == REGRESSION]
-
-
-def classification_datasets():
-    return [ds for ds in all_datasets if ds.type_ == CLASSIFICATION]
+def all_datasets():
+    from . import regression_datasets, classification_datasets
+    return regression_datasets.all_datasets() + classification_datasets.all_datasets()

@@ -1,11 +1,14 @@
 # Contributing
 
 ## Implementing
-Make a new dataset like those found in ```ucimlr/dataset.py```.
-By subclassing either the ```ucimlr.datasets.ClassificationDataset``` or
-```ucimlr.datasets.RegressionDataset```, it will
-automatically be added to the list of dataset. Read the superclass
-definition to understand what the subclass needs to implement.
+Make a new dataset like those found in for example
+```ucimlr/regression_datasets.py```.
+By subclassing either
+```ucimlr.classification_datasets.ClassificationDataset``` or
+```ucimlr.regression_datasets.RegressionDataset```, it will
+automatically be added to the lists of dataset and be tested.
+Read the superclass definition to understand what the subclass
+needs to implement.
 
 # Testing
 Add a short version of the dataset (~100 rows) to ```dataset_test_stubs```
@@ -22,4 +25,8 @@ First install the document generation tool:
 
 Then run 
 
-```pydoc-markdown -m ucimlr.datasets > docs/datasets.md```.
+```sh mkdocs.sh```.
+
+Inspect documentation by running:
+
+```mkdocs serve```
